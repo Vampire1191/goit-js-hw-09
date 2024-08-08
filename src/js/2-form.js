@@ -1,38 +1,40 @@
-const STORAGE_KEY = 'feedback-form-state';
-const formData = { email: '', message: '' };
-const refs = {
-  form: document.querySelector('.feedback-form'),
-  email: document.querySelector('.feedback-form input'),
-  message: document.querySelector('.feedback-form textarea'),
+let formData = {
+  email: '',
+  message: '',
 };
-entryFormInput();
-refs.form.addEventListener('input', onInput);
-refs.form.addEventListener('submit', onFormSubmit);
 
-function onInput() {
-  const { name, value } = event.target;
-  formData[name] = value;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+const form = document.querySelector('.feedback-form');
+
+function updateData(e) {
+  const { name, value } = e.target;
+  formData[name] = value.trim();
+  localStorage.setItem('feedback-form-state', JSON.stringify(formData));
 }
-function onFormSubmit() {
-  event.preventDefault();
-  if (!formData.email || !formData.message) {
-    alert('Fill please all fields');
+
+form.addEventListener('input', updateData);
+
+document.addEventListener('DOMContentLoaded', function () {
+  const storedData = JSON.parse(localStorage.getItem('feedback-form-state'));
+  if (storedData) {
+    formData = storedData;
+    document.querySelector('[name="email"]').value = formData.email;
+    document.querySelector('[name="message"]').value = formData.message;
+  }
+});
+
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  if (formData.email.trim() === '' || formData.message.trim() === '') {
+    alert('Please, fill all fields');
     return;
   }
+
   console.log(formData);
-  event.currentTarget.reset();
-  localStorage.removeItem(STORAGE_KEY);
-}
 
-function entryFormInput() {
-  const savedlocalStorage = localStorage.getItem(STORAGE_KEY);
-  if (savedlocalStorage) {
-    const parsedData = JSON.parse(savedlocalStorage);
-    formData.email = parsedData.email;
-    formData.message = parsedData.message;
+  localStorage.removeItem('feedback-form-state');
+  formData = { email: '', message: '' };
 
-    refs.form.email.value = parsedData.email;
-    refs.form.message.value = parsedData.message;
-  }
-}
+  document.querySelector('[name="email"]').value = '';
+  document.querySelector('[name="message"]').value = '';
+});
